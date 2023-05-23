@@ -1,6 +1,12 @@
 # nf-msspe
 A NextFlow pipeline for Metagenomic Sequencing with Spiked Primer Enrichment
 
+## Getting started
+
+**Prerequisites**
+
+* [Nextflow](https://nf-co.re/usage/installation)
+* [Docker](https://docs.docker.com/engine/install/) or [Singularity](https://sylabs.io/guides/3.0/user-guide/installation.html)                                                                                                                  
 **Installation**
 
 ```
@@ -8,6 +14,13 @@ git clone https://github.com/MaestSi/nf-msspe.git
 cd nf-msspe
 chmod 755 *
 ```
+
+## Overview
+
+<p align="center">
+  <img src="Figures/nf-msspe_pipeline.png" alt="drawing" width=600" title="nf-msspe_pipeline">
+</p>
+
 ## Usage
 
 The nf-msspe pipeline requires you to open nf-msspe.conf configuration file and set the desired options. Then, you can run the pipeline using either docker or singularity environments just specifying a value for the -profile variable.
