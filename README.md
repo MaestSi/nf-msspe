@@ -7,6 +7,7 @@ A NextFlow pipeline for Metagenomic Sequencing with Spiked Primer Enrichment
 
 * [Nextflow](https://nf-co.re/usage/installation)
 * [Docker](https://docs.docker.com/engine/install/) or [Singularity](https://sylabs.io/guides/3.0/user-guide/installation.html)                                                                                                                  
+
 **Installation**
 
 ```
