@@ -36,10 +36,10 @@ Run_MSSPE = function(mfa_file, primers_file, ovlp_window_size, search_window_siz
   }
   
   #Checks
-  if (length(ovlp_window_size) > mfa_width) {
+  if (ovlp_window_size > mfa_width) {
     stop("ovlp_window_size is greater than the length of sequences in fasta file. Please check ovlp_window_size parameter!\n")
   }
-  if (length(ovlp_window_size) < 2*search_window_size) {
+  if (ovlp_window_size < 2*search_window_size) {
     stop("ovlp_window_size is smaller than 2*search_window_size. Please consider decreasing ovlp_window_size or increasing search_window_size parameters!\n")
   }
   
@@ -143,4 +143,4 @@ Run_MSSPE = function(mfa_file, primers_file, ovlp_window_size, search_window_siz
 }
 
 #Run MSSPE
-Run_MSSPE(mfa_file, primers_file, ovlp_window_size, search_window_size, kmer_size, num_acc_miss, num_max_it)
+Run_MSSPE(mfa_file, primers_file, as.numeric(ovlp_window_size), as.numeric(search_window_size), as.numeric(kmer_size), as.numeric(num_acc_miss), as.numeric(num_max_it))
