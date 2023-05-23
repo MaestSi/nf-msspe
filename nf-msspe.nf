@@ -71,11 +71,11 @@ process msspe {
     if(params.msspe)
     """
     	mkdir -p \$(basename ${params.primers_file})
-    	mfa_file=\$(echo \$(basename ${params.fasta_file}) | sed \'s/\\.fa.*/.mfa/\'))
+    	mfa_file=\$(echo \$(basename \$(realpath ${params.fasta_file}) | sed \'s/\\.fa.*/.mfa/\'))
     	
-    	/opt/conda/bin/Rscript ${params.scripts_dir}/MSSPE.R ovlp_window_size=${params.ovlp_window_size} 
-    	search_window_size=${params.search_window_size} kmer_size=${params.kmer_size} 
-    	num_acc_miss=${params.num_acc_miss} num_max_it={params.num_max_it} 
+    	/opt/conda/bin/Rscript ${params.scripts_dir}/MSSPE.R ovlp_window_size=${params.ovlp_window_size} \
+    	search_window_size=${params.search_window_size} kmer_size=${params.kmer_size} \
+    	num_acc_miss=${params.num_acc_miss} num_max_it=${params.num_max_it} \
     	mfa_file=\$mfa_file primers_file=${params.primers_file}
     """
 	else
