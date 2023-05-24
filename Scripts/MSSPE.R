@@ -48,9 +48,12 @@ Run_MSSPE = function(mfa_file, primers_file, ovlp_window_size, search_window_siz
   }
   
   #identify windows of width 2*ovlp_window_size with overlap of ovlp_window_size
-  cuts <- unique(c(seq(from = 1, to = mfa_width, by = ovlp_window_size), mfa_width))
+  cuts <- unique(c(seq(from = 1, to = mfa_width, by = ovlp_window_size)))
   cuts_start <- cuts[seq_along(cuts) %% 2 == 1]
   cuts_end <- cuts[seq_along(cuts) %% 2 == 0]
+  if (length(cuts) %%2 == 1) {
+    cuts_start <- cuts_start[1:(length(cuts_start) - 1)]
+  }
   cuts_GRanges <- IRanges(start = cuts_start, end = cuts_end)
   #identify the first and last search_window_size bases for primers search
   cuts_GRanges_start <- resize(cuts_GRanges, width = search_window_size, fix = "start")
