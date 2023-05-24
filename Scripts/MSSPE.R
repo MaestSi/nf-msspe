@@ -38,7 +38,6 @@ Run_MSSPE = function(mfa_file, primers_file, ovlp_window_size, search_window_siz
   if (length(mfa_width) > 1) {
     stop("There were issues with the Multiple Sequence Alignment file!\n")
   }
-  
   #Checks
   if (ovlp_window_size > mfa_width) {
     stop("ovlp_window_size is greater than the length of sequences in fasta file. Please check ovlp_window_size parameter!\n")
@@ -46,7 +45,6 @@ Run_MSSPE = function(mfa_file, primers_file, ovlp_window_size, search_window_siz
   if (ovlp_window_size < 2*search_window_size) {
     stop("ovlp_window_size is smaller than 2*search_window_size. Please consider decreasing ovlp_window_size or increasing search_window_size parameters!\n")
   }
-  
   #identify windows of width 2*ovlp_window_size with overlap of ovlp_window_size
   cuts <- unique(c(seq(from = 1, to = mfa_width, by = ovlp_window_size)))
   cuts_start <- cuts[seq_along(cuts) %% 2 == 1]
@@ -67,10 +65,22 @@ Run_MSSPE = function(mfa_file, primers_file, ovlp_window_size, search_window_siz
   kmers_GRanges <- IRanges(start = kmers_start, end = kmers_end)
   #extract subsequences corresponding to all possible kmers of length kmer_size from the first search_window_size of each window
   mfa_split_seq_tmp <- lapply(mfa_split_start, function(x) extractAt(x, kmers_GRanges))
-  mfa_split_seq <- lapply(mfa_split_seq_tmp, function(x) as.character(unlist(x)))
+  #reformat object
+  mfa_split_seq <- c()
+  for (i in 1:length(mfa_split_seq_tmp)) {
+    mfa_split_seq_curr <- lapply(mfa_split_seq_tmp[[i]], function(y) as.character(y))
+    names(mfa_split_seq_curr) <- paste0(names(mfa_split_seq_tmp[i]), "_segment_", 1:length(mfa_split_seq_curr))
+    mfa_split_seq <- c(mfa_split_seq, mfa_split_seq_curr)
+  }
   #extract subsequences corresponding to the reverse complement of all possible kmers of length kmer_size from the last search_window_size of each window
-  mfa_split_seq_rc_tmp <- lapply(mfa_split_end, function(x) reverseComplement(unlist(extractAt(x, kmers_GRanges))))
-  mfa_split_seq_rc <- lapply(mfa_split_seq_rc_tmp, function(x) as.character(x))
+  mfa_split_seq_rc_tmp <- lapply(mfa_split_end, function(x) extractAt(reverseComplement(x), kmers_GRanges))
+  #reformat object
+  mfa_split_seq_rc <- c()
+  for (i in 1:length(mfa_split_seq_rc_tmp)) {
+    mfa_split_seq_rc_curr <- lapply(mfa_split_seq_rc_tmp[[i]], function(y) as.character(y))
+    names(mfa_split_seq_rc_curr) <- paste0(names(mfa_split_seq_rc_tmp[i]), "_segment_", 1:length(mfa_split_seq_rc_curr))
+    mfa_split_seq_rc <- c(mfa_split_seq_rc, mfa_split_seq_rc_curr)
+  }
   names(mfa_split_seq_rc) <- paste0(names(mfa_split_seq_rc), "_revComp")
   #merge all kmers and remove unwanted patterns in the alignment
   kmers_tmp <- c(mfa_split_seq, mfa_split_seq_rc)
@@ -83,7 +93,7 @@ Run_MSSPE = function(mfa_file, primers_file, ovlp_window_size, search_window_siz
     }
     return(tmp)
   })
-  
+  kmers <- kmers[which(unlist(lapply(kmers, function(x) length(x))) > 0)]
   #reiterate on the list of segments until specific criteria are met
   #at each iteration identify the most frequent kmer and remove corresponding segment, together with its reverse complement
   residual_kmers <- kmers
@@ -96,12 +106,11 @@ Run_MSSPE = function(mfa_file, primers_file, ovlp_window_size, search_window_siz
     candidate_primer_curr <- names(sort(table(unlist(residual_kmers)), decreasing = TRUE)[1])
     candidate_primers <- c(candidate_primers, candidate_primer_curr)
     ind_primer_found <- which(grepl(pattern = candidate_primer_curr, residual_kmers))
-    segments_primer_found <- which(grepl(x = names(residual_kmers), pattern = paste0(unique(gsub(x = names(residual_kmers)[ind_primer_found], pattern = "_revComp", replacement = "")), collapse = "|")))
+    segments_primer_found <- names(residual_kmers)[which(grepl(x = names(residual_kmers), pattern = paste0(unique(gsub(x = names(residual_kmers)[ind_primer_found], pattern = "_revComp", replacement = "")), collapse = "|")))]
     names_primer_found[[counter]] <- names(residual_kmers)[ind_primer_found]
-    residual_kmers <- residual_kmers[-segments_primer_found]
+    residual_kmers <- residual_kmers[setdiff(names(residual_kmers), segments_primer_found)]
     counter <- counter + 1
   }
-  
   #assign names to primers based on the amount of sequences in the database sharing the primer
   primers_names <- unlist(lapply(names_primer_found, function(x) {
     num_rc <- length(grep(pattern = "_revComp", x = x))
@@ -114,10 +123,10 @@ Run_MSSPE = function(mfa_file, primers_file, ovlp_window_size, search_window_siz
       name <- paste0("Primer_fw_", num_fw, "_sequences_", num_rc, "_rv_sequences")  
     }
   }))
-  
+  #change format
   candidate_primers <- DNAStringSet(candidate_primers)
   names(candidate_primers) <- primers_names
-  
+  names(names_primer_found) <- primers_names
   #filter candidate primers for homopolymers
   pattern_hompolymers <- c("AAAAA", "TTTTT", "CCCCC", "GGGGG")
   ind_homopol <- c()
@@ -125,25 +134,28 @@ Run_MSSPE = function(mfa_file, primers_file, ovlp_window_size, search_window_siz
     ind_homopol <- c(ind_homopol, which(unlist(lapply(vmatchPattern(pattern = p, subject = candidate_primers), function(x) length(x) > 0))))
   }
   ind_homopol <- unique(ind_homopol)
-  
   #filter candidate primers for melting temperature Tm
   GC_count <- unlist(lapply(vmatchPattern(pattern = "S", subject = candidate_primers, fixed = "subject"), function(x) sum(width(x))))
   AT_count <- unlist(lapply(vmatchPattern(pattern = "W", subject = candidate_primers, fixed = "subject"), function(x) sum(width(x))))
   Tm <- 64.9 + 41*(GC_count - 16.4)/(GC_count + AT_count)
   Tm_threshold <- mean(Tm) + 2*sd(Tm)
   ind_high_Tm <- which(Tm > Tm_threshold)
-  
   #discard primers that do not met the criteria
   ind_discard <- c(ind_high_Tm, ind_homopol)
   if (length(ind_discard) > 0) {
-    primers <- candidate_primers[-ind_discard]  
+    primers <- candidate_primers[-ind_discard]
+    names_primer_found <- names_primer_found[-ind_discard]
   } else {
     primers <- candidate_primers
   }
-  
+  #save primers and report with segments iteratively amplified by each primer to file
   if (length(primers) > 0) {
-    #save primers to file
     writeXStringSet(x = primers, filepath = primers_file)
+    report_file <- paste0(dirname(primers_file), "/Report_MSSPE_", basename(primers_file))
+    file.create(report_file)
+    sink(report_file)
+    print(names_primer_found)
+    sink()
   } else {
     cat(sprintf("No primers found!\n"))
   }
