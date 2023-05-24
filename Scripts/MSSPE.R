@@ -30,7 +30,7 @@ library("Biostrings")
 Run_MSSPE = function(mfa_file, primers_file, ovlp_window_size, search_window_size, kmer_size, num_acc_miss, num_max_it) {
   #substitute U with T
   mfa_file_tmp <- gsub(x = mfa_file, pattern = "\\.mfa", replacement = "_tmp.mfa")
-  system(command = paste0("cat ", mfa_file, " | sed \'s/U/T/g\' > ", mfa_file_tmp))
+  system(command = paste0("cat ", mfa_file, " | sed \'s/U/T/g\ | sed \'s/u/t/g\' > ", mfa_file_tmp))
   system(command = paste0("mv ", mfa_file_tmp, " ", mfa_file))
   #import the multiple sequence alignment as a DNAStringSet object and check all sequences in the gapped alignment have the same length
   mfa <- readDNAStringSet(filepath = mfa_file, format = "fasta")
