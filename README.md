@@ -46,6 +46,6 @@ Other mandatory arguments which may be specified in the nf-msspe.conf file
 
 ## Citation
 
-This pipeline is a NextFlow version of MSSPE pipeline described in [Deng et al. paper](https://www.nature.com/articles/s41564-019-0637-9), with minor adjustments.
+This pipeline is a NextFlow implementation of MSSPE pipeline described in [Deng et al. paper](https://www.nature.com/articles/s41564-019-0637-9), with minor adjustments.
 
 Deng, X., Achari, A., Federman, S. et al. Metagenomic sequencing with spiked primer enrichment for viral diagnostics and genomic surveillance. Nat Microbiol 5, 443–454 (2020).
