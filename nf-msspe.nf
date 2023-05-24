@@ -42,7 +42,7 @@ Channel
 // From fasta to multiple sequence alignment
 process msa {
     input:
-		tuple val(fasta) from fasta_msa
+	tuple val(fasta) from fasta_msa
 
     output:
     	val(fasta) into msa_msspe
@@ -50,38 +50,38 @@ process msa {
     if(params.msa)
     """
     	mkdir -p \$(basename ${params.primers_file})
-    	mfa_file=\$(echo \$(basename \$(realpath ${params.fasta_file}) | sed \'s/\\.fa.*/.mfa/\'))
-    	/opt/conda/bin/mafft --auto --thread ${task.cpus} --adjustdirectionaccurately ${fasta} > \$mfa_file 
+    	mfa_file=\$(echo \$(realpath ${params.fasta_file}) | sed \'s/\\.fa.*/.mfa/\')
+    	/opt/conda/bin/mafft --auto --thread ${task.cpus} --adjustdirectionaccurately ${fasta} > \$mfa_file
     """
 	else
 	"""
-		mfa_file=\$(echo \$(basename \$(realpath ${params.fasta_file}) | sed \'s/\\.fa.*/.mfa/\'))
-		ln -s \$mfa_file .
+	mfa_file=\$(echo \$(basename \$(realpath ${params.fasta_file}) | sed \'s/\\.fa.*/.mfa/\'))
+	ln -s \$mfa_file .
     """
 }
 
 // From fasta to multiple sequence alignment
 process msspe {
-    input:
-		tuple val(fasta) from msa_msspe
+	input:
+	tuple val(fasta) from msa_msspe
 
-    output:
+	output:
 
-    script:
-    if(params.msspe)
-    """
-    	mkdir -p \$(basename ${params.primers_file})
-    	mfa_file=\$(echo \$(realpath ${params.fasta_file}) | sed \'s/\\.fa.*/.mfa/\')
-        echo \$mfa_file
-    	
-    	/opt/conda/bin/Rscript ${params.scripts_dir}/MSSPE.R ovlp_window_size=${params.ovlp_window_size} \
-    	search_window_size=${params.search_window_size} kmer_size=${params.kmer_size} \
-    	num_acc_miss=${params.num_acc_miss} num_max_it=${params.num_max_it} \
-    	mfa_file=\$mfa_file primers_file=${params.primers_file}
-    """
+	script:
+	if(params.msspe)
+	"""
+	mkdir -p \$(basename ${params.primers_file})
+	mfa_file=\$(echo \$(realpath ${params.fasta_file}) | sed \'s/\\.fa.*/.mfa/\')
+	echo \$mfa_file
+
+	/opt/conda/bin/Rscript ${params.scripts_dir}/MSSPE.R ovlp_window_size=${params.ovlp_window_size} \
+	search_window_size=${params.search_window_size} kmer_size=${params.kmer_size} \
+ 	num_acc_miss=${params.num_acc_miss} num_max_it=${params.num_max_it} \
+ 	mfa_file=\$mfa_file primers_file=${params.primers_file}
+	"""
 	else
 	"""
-		echo "Skipped."
-    """
+	echo "Skipped."
+	"""
 }
 
