@@ -28,7 +28,6 @@ The nf-msspe pipeline requires you to open nf-msspe.conf configuration file and 
 
 ```
 Usage:
-export NXF_DEFAULT_DSL=1
 nextflow -c nf-msspe.conf run nf-msspe.nf --fasta_file = "/path/to/file.fasta" --primers_file = "/path/to/primers.fasta" -profile docker
 
 Mandatory argument:
