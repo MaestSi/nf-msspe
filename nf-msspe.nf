@@ -1,7 +1,7 @@
 #!/usr/bin/env nextflow
 /*
 ========================================================================================
-                         mfurla/bproject
+                         MaestSi/nf-msspe
 ========================================================================================
  MaestSi/nf-msspe analysis pipeline.
  #### Homepage / Documentation
@@ -37,15 +37,14 @@ if (params.help) {
 // Input of fasta file
 Channel
 	.fromPath(params.fasta_file, checkIfExists:true)
-	.into{fasta_msa}
+	.set{fasta_msa}
 
 // From fasta to multiple sequence alignment
 process msa {
     input:
-	tuple val(fasta) from fasta_msa
-
+	val fasta
     output:
-    	val(fasta) into msa_msspe
+    val fasta
     script:
     if(params.msa)
     """
@@ -63,10 +62,8 @@ process msa {
 // From fasta to multiple sequence alignment
 process msspe {
 	input:
-	tuple val(fasta) from msa_msspe
-
+	val fasta
 	output:
-
 	script:
 	if(params.msspe)
 	"""
@@ -85,3 +82,7 @@ process msspe {
 	"""
 }
 
+workflow {
+	msa(fasta_msa)
+	msspe(msa.out)
+}
